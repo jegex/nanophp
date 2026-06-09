@@ -153,7 +153,7 @@ dd($var);                        // dump and die
 Cache::remember('key', $ttl, fn() => expensiveCall());
 ```
 
-Enable per source in `config/data.php` (`cache_ttl > 0`). JSON format (no object injection).
+Set TTL in your data source implementation. JSON format (no object injection).
 
 ### Validation
 
@@ -191,7 +191,7 @@ $v->setAlias('email', 'Email Address');
 
 ```bash
 # Set debug false in config/app.php
-# Enable cache_ttl > 0 in config/data.php
+# Set cache_ttl > 0 in your data source
 ```
 
 ## License
