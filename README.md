@@ -32,9 +32,11 @@ cd nanophp
 php -S localhost:8000 router.php
 ```
 
-Open `http://localhost:8000`. Append `?lang=id` for Indonesian.
+Open `http://localhost:8000`. Append `?lang=id` for Indonesian, or enable prefix mode (`lang_prefix: true`) for `/id/page` URLs.
 
 Edit `config/app.php` to set your site name, base URL, and language. For production, upload the folder to any PHP 8.1+ host — no Composer needed.
+
+> **Note:** `router.php` is for the **PHP dev server only**. It serves static files directly and passes all other requests to `index.php`. In production, Apache/Nginx handle static files natively — just ensure URL rewriting points to `index.php`.
 
 ### Quick Start
 
@@ -104,16 +106,94 @@ Route patterns support `{param}` placeholders. Routes from all active plugins me
 
 ### View
 
-Data passed to `render()` is accessible via `$this->` inside templates:
+Data passed to `render()` is accessible via `$this->` inside templates (no `extract()` — prevents variable collision):
 
 ```php
 <?php $this->extend('layout') ?>
-<?php $this->section('content') ?>
+<?php $this->start('content') ?>
   <h1><?= $this->page_title ?></h1>
-<?php $this->endSection() ?>
+<?php $this->end('content') ?>
 ```
 
-Available: `extend()`, `section()`/`endSection()`, `partial()`, `asset()`.
+Common view variables (always available from `Controller::render()`):
+
+| Variable | Source |
+|----------|--------|
+| `$this->page_title` | page-specific override or `site_name` |
+| `$this->site_name` | `config('app.site_name')` |
+| `$this->site_desc` | `config('app.site_desc')` |
+| `$this->base_url` | `base_url()` helper — includes lang prefix if enabled |
+| `$this->current_page` | current URI path, e.g. `index`, `about` |
+
+Methods: `extend()`, `start()`/`end()`, `partial()`, `asset()`, `section()` (echo a section defined in child view).
+
+**Translations** in templates:
+
+```php
+<?= $this->__('nav.home') ?>     <!-- via View -->
+<?= __('nav.home') ?>            <!-- via global helper -->
+```
+
+**Raw injection points** (set via hook or controller data):
+
+```php
+<?= $this->head_append ?? '' ?>   <!-- before </head> -->
+<?= $this->body_append ?? '' ?>   <!-- before </body> -->
+```
+
+### Language
+
+Two modes controlled by `lang_prefix` in `config/app.php`:
+
+**Query mode** (`lang_prefix: false`, default):
+```
+?lang=id    → Indonesian
+?lang=en    → English
+```
+
+**Prefix mode** (`lang_prefix: true`):
+```
+/id/page    → Indonesian
+/en/page    → English
+/page       → default language (if hide_default_locale_in_url: true)
+```
+
+When `hide_default_locale_in_url` is `true` (default), the default language has no prefix —
+`/page` loads the default locale. Set to `false` to always show the prefix: `/en/page`.
+
+**Auto-detection:** When `use_accept_language_header` is `true`, first-time visitors without a session or URL parameter get matched against their browser's `Accept-Language` header.
+
+**URL segment aliasing** with `locales_mapping`:
+```php
+'locales_mapping' => ['en' => 'english', 'id' => 'indonesia']
+```
+Result: `/indonesia/tentang`, `/english/about`.
+
+**Translation files** live in `themes/{theme}/lang/{code}.json`:
+
+```json
+{
+  "nav": {
+    "home": "Home",
+    "about": "About"
+  },
+  "404": {
+    "title": "Page Not Found",
+    "message": "The page you are looking for does not exist.",
+    "back_home": "Back to Home"
+  }
+}
+```
+
+Retrieve translations in controllers or views:
+
+```php
+Language::get('nav.home');   // via class
+__('nav.home');               // via global helper
+$this->__('nav.home');        // via View
+```
+
+See `config/app.php` for all language configuration options.
 
 ### Hooks
 
@@ -140,12 +220,16 @@ Hook::has('router.routes'); // bool
 
 ```php
 config('app.site_name');        // Config::get() shortcut
-url('page');                     // URL with base_url prefix
+base_url('/page');               // Full URL with lang prefix if enabled
+url('/page', ['q' => 'foo']);    // base_url() + query string
 e($user_input);                  // HTML escape
-str_limit($text, 50);            // truncate
-array_get($data, 'key.nested');  // deep array access
-dd($var);                        // dump and die
+__('nav.home');                  // Language::get() shortcut
+str_limit($text, 50);            // Truncate with ellipsis
+array_get($data, 'key.nested');  // Deep array access
+dd($var);                        // Dump and die
 ```
+
+`base_url()` auto-appends the language prefix in prefix mode. `url()` builds on `base_url()` and accepts an optional query array.
 
 ### Cache
 
@@ -190,9 +274,13 @@ $v->setAlias('email', 'Email Address');
 ## Production
 
 ```bash
-# Set debug false in config/app.php
-# Set cache_ttl > 0 in your data source
+# Set debug: false in config/app.php — errors log to app/error.log
+# Point Apache/Nginx document root to the project folder
+# Apache: mod_rewrite handles clean URLs via .htaccess
+# Nginx:  try_files $uri $uri/ /index.php;
 ```
+
+No `composer install` or file generation needed. Just upload and run.
 
 ## License
 
