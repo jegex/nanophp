@@ -16,7 +16,6 @@ class View {
     public function render(string $view, array $data = []): void {
         $data = Hook::filter('view.render', $data, $view);
         $this->data = $data;
-        extract($data);
 
         $viewPath = $this->findView($view);
         if (!$viewPath) {
@@ -61,10 +60,13 @@ class View {
     }
 
     public function partial(string $name, array $data = []): void {
-        extract($this->data);
-        extract($data);
+        $this->data = array_merge($this->data, $data);
         $path = $this->findView('partials/' . $name);
         if ($path) require $path;
+    }
+
+    public function __get(string $name): mixed {
+        return $this->data[$name] ?? null;
     }
 
     public function __(string $key): string {

@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<?php if (!empty($meta)): foreach ($meta as $k => $v): ?>
+<?php if (!empty($this->meta)): foreach ($this->meta as $k => $v): ?>
   <meta <?= str_starts_with($k, 'og:') ? 'property' : 'name' ?>="<?= e($k) ?>" content="<?= e($v) ?>">
 <?php endforeach; endif; ?>
-  <title><?= e($page_title) ?> | <?= e($site_name) ?></title>
-  <?= $head_append ?? '' ?>
+  <title><?= e($this->page_title) ?> | <?= e($this->site_name) ?></title>
+  <?= $this->head_append ?? '' ?>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
@@ -23,6 +23,6 @@
     </main>
     <?php $this->partial('footer') ?>
   </div>
-  <?= $body_append ?? '' ?>
+  <?= $this->body_append ?? '' ?>
 </body>
 </html>

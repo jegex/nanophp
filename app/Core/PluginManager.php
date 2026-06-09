@@ -7,18 +7,19 @@ class PluginManager {
     public function boot(): void {
         $this->registerAutoload();
 
-        $active = Config::get('plugins.active', []);
-        $allConfigs = Config::get('plugins.config', []);
+        $plugins = $this->discover();
 
-        foreach ($active as $name) {
+        foreach ($plugins as $name => $cfg) {
+            if (!$cfg['enabled']) continue;
+
             $class = "NanoPHP\\Plugins\\{$name}\\{$name}";
             if (!class_exists($class)) continue;
 
             $instance = new $class();
             if (!$instance instanceof Plugin) continue;
 
-            if (isset($allConfigs[$name])) {
-                $instance->setConfig($allConfigs[$name]);
+            if (!empty($cfg['config'])) {
+                $instance->setConfig($cfg['config']);
             }
 
             $instance->boot();
@@ -26,6 +27,27 @@ class PluginManager {
         }
 
         Hook::run('app.boot');
+    }
+
+    private function discover(): array {
+        $pluginsDir = __DIR__ . '/../../plugins/';
+        $active = Config::get('plugins.active', []);
+        $allConfigs = Config::get('plugins.config', []);
+        $plugins = [];
+
+        $dirs = glob($pluginsDir . '*', GLOB_ONLYDIR);
+        if ($dirs) {
+            foreach ($dirs as $dir) {
+                $name = basename($dir);
+                if (!file_exists($dir . '/plugin.json')) continue;
+                $plugins[$name] = [
+                    'enabled' => in_array($name, $active),
+                    'config' => $allConfigs[$name] ?? [],
+                ];
+            }
+        }
+
+        return $plugins;
     }
 
     private function registerAutoload(): void {
