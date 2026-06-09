@@ -1,0 +1,11 @@
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+<FilesMatch "\.(css|js|jpg|jpeg|png|webp|svg)$">
+  Header set Cache-Control "max-age=31536000, public"
+</FilesMatch>
+
+Header set X-Frame-Options "SAMEORIGIN"
+Header set X-Content-Type-Options "nosniff"

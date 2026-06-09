@@ -1,0 +1,15 @@
+{
+  "lang": { "code": "id" },
+  "nav": { "home": "Beranda" },
+  "500": {
+    "title": "Kesalahan Server",
+    "message": "Terjadi kesalahan pada server.",
+    "go_home": "Kembali ke Beranda"
+  },
+  "footer": { "copyright": "&copy; 2026 NanoPHP Framework" },
+  "404": {
+    "title": "Halaman Tidak Ditemukan",
+    "message": "Halaman yang Anda cari tidak ditemukan.",
+    "back_home": "Kembali ke Beranda"
+  }
+}

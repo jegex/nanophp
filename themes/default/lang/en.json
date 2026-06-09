@@ -1,0 +1,15 @@
+{
+  "lang": { "code": "en" },
+  "nav": { "home": "Home" },
+  "500": {
+    "title": "Server Error",
+    "message": "Something went wrong on our end.",
+    "go_home": "Go Home"
+  },
+  "footer": { "copyright": "&copy; 2026 NanoPHP Framework" },
+  "404": {
+    "title": "Page Not Found",
+    "message": "The page you're looking for doesn't exist.",
+    "back_home": "Back to Home"
+  }
+}

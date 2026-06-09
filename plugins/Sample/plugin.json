@@ -1,0 +1,5 @@
+{
+    "name": "Sample",
+    "description": "Sample plugin with a home route",
+    "version": "1.0.0"
+}
