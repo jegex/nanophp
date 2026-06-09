@@ -20,70 +20,24 @@ No Composer. No external PHP libraries. Upload and run.
 ## Requirements
 
 - PHP 8.1+
-- Apache with `mod_rewrite` or Nginx (see config below)
-- Node.js (optional — CSS compilation only)
+- Apache with `mod_rewrite` or Nginx
 
-## Quick Start
+## Installation
 
 ```bash
+git clone https://github.com/jegex/nanophp.git
+cd nanophp
 php -S localhost:8000 router.php
 ```
 
 Open `http://localhost:8000`. Append `?lang=id` for Indonesian.
 
-CSS is pre-compiled. To rebuild after editing `themes/default/input.css`:
+Edit `config/app.php` to set your site name, base URL, and language. For production, upload the folder to any PHP 8.1+ host — no Composer needed.
+
+### Quick Start
 
 ```bash
-npx @tailwindcss/cli -i ./themes/default/input.css -o ./themes/default/assets/css/style.css
-```
-
-## Structure
-
-```
-nanophp/
-├── index.php              # Front controller
-├── router.php             # Dev server with static file support
-├── .htaccess              # Apache URL rewriting
-├── app/                   # Framework source (PSR-4: NanoPHP\)
-│   ├── autoload.php       # PSR-4 autoloader
-│   ├── helpers.php        # Global helper functions
-│   ├── Core/              # Framework engine
-│   │   ├── App.php        # Bootstrap and run
-│   │   ├── Router.php     # Pattern-to-regex route dispatch
-│   │   ├── Controller.php # Base controller
-│   │   ├── View.php       # Layout/section/partial rendering
-│   │   ├── Config.php     # Configuration loader
-│   │   ├── Language.php   # Translation engine
-│   │   ├── Hook.php       # Event/filter system for plugins
-│   │   ├── Plugin.php     # Abstract base class for plugins
-│   │   ├── PluginManager.php # Plugin boot + autoloader
-│   │   ├── Cache.php      # File-based caching layer
-│   │   ├── DataSourceInterface.php
-│   │   └── DataSourceManager.php
-│   └── error.log          # Error log (production mode)
-├── config/                # Configuration files
-│   ├── app.php            # Site name, theme, language
-│   ├── data.php           # Data source setting
-│   └── plugins.php        # Active plugins + config
-├── themes/
-│   └── default/           # Default theme
-│       ├── theme.json     # Theme metadata
-│       ├── input.css      # Tailwind CSS source
-│       ├── views/         # Page templates
-│       │   ├── layout.php
-│       │   ├── home.php
-│       │   ├── 404.php
-│       │   └── 500.php
-│       ├── partials/      # Navigation, footer
-│       ├── lang/          # Translations (en.json, id.json)
-│       └── assets/        # Compiled CSS, JS, images
-├── cache/                 # File cache storage
-├── plugins/
-│   └── Sample/            # Sample plugin (home route)
-│       ├── sample.php     # Boot class
-│       ├── plugin.json    # Metadata
-│       ├── Controllers/   # HomeController
-│       └── config/        # Routes
+php -S localhost:8000 router.php
 ```
 
 ## Creating a Plugin
@@ -193,15 +147,6 @@ Enable per source in `config/data.php` (`cache_ttl > 0`). JSON format (no object
 ```bash
 # Set debug false in config/app.php
 # Enable cache_ttl > 0 in config/data.php
-# CSS is pre-compiled — no build step needed
-```
-
-## CSS
-
-Built with Tailwind CSS v4. Edit theme tokens in `themes/default/input.css`, then rebuild:
-
-```bash
-npx @tailwindcss/cli -i ./themes/default/input.css -o ./themes/default/assets/css/style.css
 ```
 
 ## License
