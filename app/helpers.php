@@ -9,10 +9,10 @@ function base_url(string $path = ''): string {
     $base = \NanoPHP\Core\Config::get('app.base_url', '');
     if (\NanoPHP\Core\Config::get('app.lang_prefix', false)) {
         $default = \NanoPHP\Core\Config::get('app.default_lang', 'en');
-        $hideDefault = \NanoPHP\Core\Config::get('app.hideDefaultLocaleInURL', true);
+        $hideDefault = \NanoPHP\Core\Config::get('app.hide_default_locale_in_url', true);
         $current = \NanoPHP\Core\Language::current();
         if (!$hideDefault || $current !== $default) {
-            $mapping = \NanoPHP\Core\Config::get('app.localesMapping', []);
+            $mapping = \NanoPHP\Core\Config::get('app.locales_mapping', []);
             $base .= '/' . ($mapping[$current] ?? $current);
         }
     }

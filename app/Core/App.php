@@ -51,7 +51,7 @@ class App {
             $lang = $_SESSION['lang'] ?? null;
         }
 
-        if ($lang === null && Config::get('app.useAcceptLanguageHeader', false)) {
+        if ($lang === null && Config::get('app.use_accept_language_header', false)) {
             $lang = self::detectBrowserLanguage($supported);
         }
 
@@ -62,7 +62,7 @@ class App {
         $_SESSION['lang'] = $lang;
         Language::init($lang);
 
-        $suffix = Config::get('app.utf8suffix', '');
+        $suffix = Config::get('app.utf8_suffix', '');
         if ($suffix) {
             setlocale(LC_TIME, "{$lang}_{$lang}.{$suffix}", "{$lang}_{$lang}");
         }
@@ -72,7 +72,7 @@ class App {
         $header = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '';
         if ($header === '') return null;
 
-        $mapping = Config::get('app.localesMapping', []);
+        $mapping = Config::get('app.locales_mapping', []);
         $reverseMapping = array_flip($mapping);
         $langs = [];
 

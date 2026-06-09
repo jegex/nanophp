@@ -41,10 +41,10 @@ class Router {
     private function detectLangPrefix(string $uri): string {
         $default = Config::get('app.default_lang', 'en');
         $supported = Config::get('app.supported_langs', []);
-        $mapping = Config::get('app.localesMapping', []);
+        $mapping = Config::get('app.locales_mapping', []);
         $reverseMapping = array_flip($mapping);
-        $hideDefault = Config::get('app.hideDefaultLocaleInURL', true);
-        $ignored = Config::get('app.urlsIgnored', []);
+        $hideDefault = Config::get('app.hide_default_locale_in_url', true);
+        $ignored = Config::get('app.urls_ignored', []);
 
         foreach ($ignored as $prefix) {
             if (str_starts_with($uri, $prefix)) return $uri;
