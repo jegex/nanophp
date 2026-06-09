@@ -1,5 +1,7 @@
 # NanoPHP — Mini MVC PHP Framework
 
+[![GitHub](https://img.shields.io/badge/GitHub-jegex/nanophp-181717?style=flat&logo=github)](https://github.com/jegex/nanophp)
+
 A lightweight, zero-dependency PHP MVC framework with plugin system, theme engine, and multi-language support.
 
 No Composer. No external PHP libraries. Upload and run.
@@ -29,8 +31,10 @@ php -S localhost:8000 router.php
 
 Open `http://localhost:8000`. Append `?lang=id` for Indonesian.
 
+CSS is pre-compiled. To rebuild after editing `themes/default/input.css`:
+
 ```bash
-npm install && npm run build   # optional — compile Tailwind CSS
+npx @tailwindcss/cli -i ./themes/default/input.css -o ./themes/default/assets/css/style.css
 ```
 
 ## Structure
@@ -60,7 +64,6 @@ nanophp/
 ├── config/                # Configuration files
 │   ├── app.php            # Site name, theme, language
 │   ├── data.php           # Data source setting
-│   ├── offers.php         # CPA offer definitions
 │   └── plugins.php        # Active plugins + config
 ├── themes/
 │   └── default/           # Default theme
@@ -81,7 +84,6 @@ nanophp/
 │       ├── plugin.json    # Metadata
 │       ├── Controllers/   # HomeController
 │       └── config/        # Routes
-└── package.json           # Tailwind CSS build scripts
 ```
 
 ## Creating a Plugin
@@ -189,19 +191,19 @@ Enable per source in `config/data.php` (`cache_ttl > 0`). JSON format (no object
 ## Production
 
 ```bash
-# Set debug false
-# Enable cache
-npm run build   # production CSS
+# Set debug false in config/app.php
+# Enable cache_ttl > 0 in config/data.php
+# CSS is pre-compiled — no build step needed
 ```
 
 ## CSS
 
+Built with Tailwind CSS v4. Edit theme tokens in `themes/default/input.css`, then rebuild:
+
 ```bash
-npm run build    # Compile Tailwind CSS v4
-npm run watch    # Watch for changes
-npm run serve    # PHP dev server
+npx @tailwindcss/cli -i ./themes/default/input.css -o ./themes/default/assets/css/style.css
 ```
 
 ## License
 
-MIT
+MIT &copy; 2026
