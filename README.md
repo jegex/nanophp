@@ -9,9 +9,11 @@ No Composer. No external PHP libraries. Upload and run.
 ## Features
 
 - **Mini MVC** — Front controller, pattern-based router, controller layer, view engine
-- **Plugin System** — Hook-driven architecture (`app.boot`, `router.*`, `controller.*`, `view.render`)
+- **Plugin System** — Auto-discovered from `plugins/*/plugin.json`, hook-driven architecture
 - **Theme Engine** — Layout inheritance, sections, partials, asset management, multi-language
 - **Data Source Abstraction** — Generic `getAll()` / `get()` interface for any backend
+- **Form Validation** — Built-in validator with 10 rules (required, email, min, max, matches, etc.)
+- **Hook System** — Priority-based event system with ID registration and removal
 - **File Cache** — JSON-based, integrated into data sources, configurable TTL
 - **PSR-4 Autoloading** — Custom autoloader, no Composer required
 - **PHP 8.1+** — Native, no extensions beyond standard PHP
@@ -42,7 +44,7 @@ php -S localhost:8000 router.php
 
 ## Creating a Plugin
 
-Each domain lives in a plugin under `plugins/{Name}/`. Activate in `config/plugins.php`.
+Each domain lives in a plugin under `plugins/{Name}/`. Plugins are auto-discovered from `plugin.json`. Enable them in `config/plugins.php`.
 
 ```
 plugins/MyPlugin/
@@ -102,16 +104,27 @@ Route patterns support `{param}` placeholders. Routes from all active plugins me
 
 ### View
 
+Data passed to `render()` is accessible via `$this->` inside templates:
+
 ```php
 <?php $this->extend('layout') ?>
 <?php $this->section('content') ?>
-  <h1><?= $page_title ?></h1>
+  <h1><?= $this->page_title ?></h1>
 <?php $this->endSection() ?>
 ```
 
 Available: `extend()`, `section()`/`endSection()`, `partial()`, `asset()`.
 
 ### Hooks
+
+Plugins register callbacks via `Hook::add()` and can provide an optional ID for removal:
+
+```php
+Hook::add('router.routes', $callback, $priority = 10, $id = null);
+Hook::remove('router.routes', $id);
+Hook::removeAll('router.routes', $priority = null);
+Hook::has('router.routes'); // bool
+```
 
 | Hook | Arguments | Description |
 |------|-----------|-------------|
@@ -141,6 +154,38 @@ Cache::remember('key', $ttl, fn() => expensiveCall());
 ```
 
 Enable per source in `config/data.php` (`cache_ttl > 0`). JSON format (no object injection).
+
+### Validation
+
+Built-in form validation via `NanoPHP\Core\Validator`:
+
+```php
+use NanoPHP\Core\Validator;
+
+$v = new Validator($_POST, [
+    'name'  => 'required|min:3|max:255',
+    'email' => 'required|email',
+    'age'   => 'numeric|min:18',
+    'url'   => 'url',
+    'password' => 'required|min:8',
+    'confirm'  => 'required|matches:password',
+]);
+
+if ($v->fails()) {
+    $errors = $v->errors();   // ['field' => 'message', ...]
+    $first  = $v->error('email'); // first error for a field
+} else {
+    $data = $v->getData();    // sanitized validated data
+}
+```
+
+Supported rules: `required`, `email`, `url`, `alpha`, `alphanumeric`, `numeric`, `min:N`, `max:N`, `matches:field`, `regex:/pattern/`.
+
+Custom field aliases for error messages:
+
+```php
+$v->setAlias('email', 'Email Address');
+```
 
 ## Production
 
