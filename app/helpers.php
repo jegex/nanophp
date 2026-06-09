@@ -5,9 +5,22 @@ function config(?string $key = null, mixed $default = null): mixed {
     return \NanoPHP\Core\Config::get($key, $default);
 }
 
-function url(string $path = '', array $query = []): string {
+function base_url(string $path = ''): string {
     $base = \NanoPHP\Core\Config::get('app.base_url', '');
-    $url = rtrim($base, '/') . '/' . ltrim($path, '/');
+    if (\NanoPHP\Core\Config::get('app.lang_prefix', false)) {
+        $default = \NanoPHP\Core\Config::get('app.default_lang', 'en');
+        $hideDefault = \NanoPHP\Core\Config::get('app.hideDefaultLocaleInURL', true);
+        $current = \NanoPHP\Core\Language::current();
+        if (!$hideDefault || $current !== $default) {
+            $mapping = \NanoPHP\Core\Config::get('app.localesMapping', []);
+            $base .= '/' . ($mapping[$current] ?? $current);
+        }
+    }
+    return rtrim($base, '/') . '/' . ltrim($path, '/');
+}
+
+function url(string $path = '', array $query = []): string {
+    $url = base_url($path);
     if (!empty($query)) {
         $url .= (str_contains($url, '?') ? '&' : '?') . http_build_query($query);
     }

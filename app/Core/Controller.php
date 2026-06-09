@@ -28,7 +28,7 @@ abstract class Controller {
             'site_name' => Config::get('app.site_name'),
             'site_desc' => Config::get('app.site_desc'),
             'current_page' => $this->view->currentPage(),
-            'base_url' => Config::get('app.base_url', ''),
+            'base_url' => base_url(),
         ], $data);
         $this->view->render($view, $viewData);
     }

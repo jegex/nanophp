@@ -41,13 +41,55 @@ class App {
     }
 
     private static function initLanguage(): void {
-        $lang = $_GET['lang'] ?? $_SESSION['lang'] ?? Config::get('app.default_lang', 'en');
         $supported = Config::get('app.supported_langs', []);
+        $prefixMode = Config::get('app.lang_prefix', false);
+        $lang = null;
+
+        if (!$prefixMode) {
+            $lang = $_GET['lang'] ?? $_SESSION['lang'] ?? null;
+        } else {
+            $lang = $_SESSION['lang'] ?? null;
+        }
+
+        if ($lang === null && Config::get('app.useAcceptLanguageHeader', false)) {
+            $lang = self::detectBrowserLanguage($supported);
+        }
+
         if (!$lang || !array_key_exists($lang, $supported)) {
             $lang = Config::get('app.default_lang', 'en');
         }
+
         $_SESSION['lang'] = $lang;
         Language::init($lang);
+
+        $suffix = Config::get('app.utf8suffix', '');
+        if ($suffix) {
+            setlocale(LC_TIME, "{$lang}_{$lang}.{$suffix}", "{$lang}_{$lang}");
+        }
+    }
+
+    private static function detectBrowserLanguage(array $supported): ?string {
+        $header = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '';
+        if ($header === '') return null;
+
+        $mapping = Config::get('app.localesMapping', []);
+        $reverseMapping = array_flip($mapping);
+        $langs = [];
+
+        foreach (explode(',', $header) as $entry) {
+            $parts = explode(';q=', trim($entry));
+            $locale = strtolower(explode('-', $parts[0])[0]);
+            $quality = isset($parts[1]) ? (float) $parts[1] : 1.0;
+            $langs[$locale] = max($langs[$locale] ?? 0, $quality);
+        }
+        arsort($langs);
+
+        foreach (array_keys($langs) as $code) {
+            if (isset($supported[$code])) return $code;
+            if (isset($reverseMapping[$code])) return $reverseMapping[$code];
+        }
+
+        return null;
     }
 
     public static function handleError(int $severity, string $message, string $file, int $line): bool {
@@ -67,7 +109,7 @@ class App {
                 'current_page' => '500',
                 'site_name' => Config::get('app.site_name', ''),
                 'site_desc' => Config::get('app.site_desc', ''),
-                'base_url' => Config::get('app.base_url', ''),
+                'base_url' => base_url(),
             ]);
         } catch (\Throwable) {
             echo '<h1>500 Server Error</h1>';

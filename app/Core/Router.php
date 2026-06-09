@@ -14,6 +14,10 @@ class Router {
         $uri = parse_url($uri, PHP_URL_PATH);
         $uri = rtrim($uri, '/') ?: '/';
 
+        if (Config::get('app.lang_prefix', false)) {
+            $uri = $this->detectLangPrefix($uri);
+        }
+
         foreach ($this->routes as $pattern => $handler) {
             $regex = $this->patternToRegex($pattern);
             if (preg_match($regex, $uri, $matches)) {
@@ -30,8 +34,38 @@ class Router {
             'current_page' => '404',
             'site_name' => Config::get('app.site_name', ''),
             'site_desc' => Config::get('app.site_desc', ''),
-            'base_url' => Config::get('app.base_url', ''),
+            'base_url' => base_url(),
         ]);
+    }
+
+    private function detectLangPrefix(string $uri): string {
+        $default = Config::get('app.default_lang', 'en');
+        $supported = Config::get('app.supported_langs', []);
+        $mapping = Config::get('app.localesMapping', []);
+        $reverseMapping = array_flip($mapping);
+        $hideDefault = Config::get('app.hideDefaultLocaleInURL', true);
+        $ignored = Config::get('app.urlsIgnored', []);
+
+        foreach ($ignored as $prefix) {
+            if (str_starts_with($uri, $prefix)) return $uri;
+        }
+
+        $parts = explode('/', trim($uri, '/'));
+        $first = $parts[0] ?? '';
+        if ($first === '') return $uri;
+
+        $lang = $reverseMapping[$first] ?? (isset($supported[$first]) ? $first : null);
+
+        if ($lang !== null) {
+            if ($hideDefault && $lang === $default) {
+                return '/' . implode('/', array_slice($parts, 1)) ?: '/';
+            }
+            Language::init($lang);
+            $_SESSION['lang'] = $lang;
+            return '/' . implode('/', array_slice($parts, 1)) ?: '/';
+        }
+
+        return $uri;
     }
 
     private function patternToRegex(string $pattern): string {
